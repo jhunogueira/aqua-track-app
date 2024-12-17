@@ -1,4 +1,5 @@
-import { Stack } from 'expo-router';
+import { useNavigation } from '@react-navigation/native';
+import { Stack, useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
   Text,
@@ -14,19 +15,31 @@ import {
 
 export default function Details() {
   const [weight, setWeight] = useState('');
-  const [dailyWaterIntake, setDailyWaterIntake] = useState<string | null>(null);
+
+  const router = useRouter();
 
   const calculateWaterIntake = () => {
     const weightNum = parseFloat(weight);
+
     if (!isNaN(weightNum) && weightNum > 0) {
-      const waterIntake = weightNum * 0.035;
-      setDailyWaterIntake(waterIntake.toFixed(2));
+      const intake = weightNum * 0.035;
       Alert.alert(
         'Consumo Diário de Água',
-        `Você deve ingerir ${waterIntake.toFixed(2)} litros de água por dia`
+        `Você deve ingerir ${intake.toFixed(2)} litros de água por dia`,
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              router.push({
+                pathname: '/home',
+                params: { intake: intake.toFixed(2) },
+              });
+            },
+          },
+        ]
       );
     } else {
-      setDailyWaterIntake(null);
+      Alert.alert('Erro', 'Por favor, insira um peso válido.');
     }
   };
 
@@ -43,7 +56,9 @@ export default function Details() {
                 <TextInput
                   keyboardType="numeric"
                   style={styles.input}
+                  value={weight}
                   placeholder="Insira o seu peso em quilogramas"
+                  onChangeText={setWeight}
                 />
               </View>
 
@@ -64,8 +79,6 @@ export default function Details() {
                   keyboardType="numeric"
                   style={styles.input}
                   placeholder="Consumo diário em litros"
-                  value={weight}
-                  onChangeText={setWeight}
                 />
               </View>
               <TouchableOpacity style={styles.button}>
